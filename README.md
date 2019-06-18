@@ -12,7 +12,8 @@ INSPIRE.app
 * `npm install -g cordova`
 
 For Android builds install Android Studio and the SDK  
-For ios builds OSX and Xcode are required
+For ios builds OSX and Xcode are required  
+FOr developing [VSCode](https://code.visualstudio.com/) is recommended. It has native support for typescript.
 
 ### Getting started
 Clone the repo and run `npm install` to install all dependencies  

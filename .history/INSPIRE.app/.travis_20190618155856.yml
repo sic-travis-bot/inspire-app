@@ -1,0 +1,76 @@
+matrix:
+  include:
+    - os: osx
+      language: objective-c
+      osx_image: xcode9.4
+      addons:   
+        chrome: beta
+
+    - os: linux
+      language: android
+      jdk: oraclejdk8
+      addons:
+        chrome: stable
+      android:
+       components:
+       - tools
+       - platform-tools-28.0.2
+       - build-tools-28.0.3
+       - android-28
+       - extra-google-google_play_services
+       - extra-google-m2repository
+       - extra-android-m2repository
+       licenses:
+       - android-sdk-preview-license-52d11cd2
+       - android-sdk-license-.+
+       - google-gdk-license-.+
+env:
+  global:
+  - ANDROID_API_LEVEL=28
+  - ANDROID_BUILD_TOOLS_VERSION=28.0.3
+git:
+  depth: 1
+
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+  - "$HOME/.android/build-cache"
+  - "$TRAVIS_BUILD_DIR/node_modules"
+  - "$HOME/.nvm/versions/node/*/lib/node_modules"
+
+before_install:
+- export LANG=en_US.UTF-8
+script:
+- rm -rf ~/.nvm
+- git clone https://github.com/creationix/nvm.git ~/.nvm
+- "(cd ~/.nvm; git checkout `git describe --abbrev=0 --tags`)"
+- source ~/.nvm/nvm.sh
+- nvm install --lts
+- npm install -g ionic
+- npm install -g cordova
+- npm install -g cordova-res
+- cd inspireDemoApp/
+- npm ci
+- npm run test-headless
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ionic cordova platform add ios && ionic cordova build ios ; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ionic cordova platform add android && ionic cordova build android ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p output && tar zcvf output/inspire-fiware-debug-unsigned.app.tgz platforms/ios/build/emulator/inspireFiwareDemoApp.app ; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mkdir -p output && cp platforms/android/app/build/outputs/apk/debug/app-debug.apk output/inspire-fiware.app-debug-unsigned.apk ; fi
+branches:
+  only:
+  - master
+deploy:
+  provider: releases
+  skip_cleanup: true
+  draft: true
+  overwrite: true
+  file_glob: true
+  api_key:
+    secure: q0lYlYDY4eTbQiKuPxZTRDqKeIpy225i5i485HI0D0qzSM6ZcSJIcZv11Euvp+vKA3u3AqSRvaGrYdWThXz0r+UKotxXcHJpJUnP1fDr7w2WE5K+Yg0sQY2etvvGzaw5dTeuvv4zFeyiyXzEXDz3AzUwqM7Jhlzj6qj4Y76XW8pkwn4gXy95ZQWOQBlGlLwV0WEEG0u1i+CsPX796XwSerl+vm+JENF4B368ncW1z46jg44zQJvoRsa8dHcRzPSohbpTKelDKj2ARUjtv+xbt0f0K787Lc+50FkGXY/m1G6pnSY6SwzzE0197Dw5VyK3hm2+M+Vy1paRwv6kQtP9bJdxktbaGDuGFDbL18yGqObeuB+j7wb7vwPPH98kKvc3b0uj/hbdKyrbpOBdfKG/yimN0+ZHvZq/n0Gr2o8KPUqfjCkRZYlNFHbgDWswTvWSgfqflO7V+MWQKCh7hNzexi4xGty8lsc2OzLYXRqMc2nJl0UeVXhBAQLDT/d2kY0LoaFQE+zbzhmRojClrWYMl03kafFQcq9s4oMFjxWcBA/UGECXuEdh2UXyZH7WzjsXXND/GBnnJ+c9VoUU0Y4oBMe6h0pC8qOWo5oxj45EIOeMSg6UJg014ub1wCjaMPZ7eQOycW+CzGDppVglTLMQP9UbSzrpV0JOPhZR4YbOXAk=
+  file: output/*
+  on:
+    repo: safetyinnovation/inspire-app
