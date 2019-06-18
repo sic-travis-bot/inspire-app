@@ -40,7 +40,6 @@ cache:
   - "$HOME/.gradle/wrapper/"
   - "$HOME/.android/build-cache"
   - "$TRAVIS_BUILD_DIR/node_modules"
-  - "$HOME/.nvm/versions/node/*/lib/node_modules"
 
 before_install:
 - export LANG=en_US.UTF-8
@@ -53,13 +52,12 @@ script:
 - npm install -g ionic
 - npm install -g cordova
 - npm install -g cordova-res
-- cd inspireDemoApp/
 - npm ci
 - npm run test-headless
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ionic cordova platform add ios && ionic cordova build ios ; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ionic cordova platform add android && ionic cordova build android ; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p output && tar zcvf output/inspire-fiware-debug-unsigned.app.tgz platforms/ios/build/emulator/inspireFiwareDemoApp.app ; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mkdir -p output && cp platforms/android/app/build/outputs/apk/debug/app-debug.apk output/inspire-fiware-debug-unsigned.apk ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p output && tar zcvf output/inspire-fiware-app-debug-unsigned.app.tgz platforms/ios/build/emulator/inspireFiwareDemoApp.app ; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mkdir -p output && cp platforms/android/app/build/outputs/apk/debug/app-debug.apk output/inspire-fiware-app-debug-unsigned.apk ; fi
 branches:
   only:
   - master
